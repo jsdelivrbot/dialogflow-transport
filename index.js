@@ -1,5 +1,6 @@
 var express = require('express')
 const bodyParser = require("body-parser");
+var request = require('request');
 var app = express()
 
 app.set('port', (process.env.PORT || 5000))
@@ -9,43 +10,74 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
-app.get('/', function(request, response) {
-  response.send('Hello World!')
+app.get('/', function (request, response) {
+    response.send('Hello World!')
 })
 
-app.listen(app.get('port'), function() {
-  console.log("Node app is running at localhost:" + app.get('port'))
+app.listen(app.get('port'), function () {
+    console.log("Node app is running at localhost:" + app.get('port'))
 })
 
 /*
-Принимаем сообщение от Яндекс.Диалоги и переправляем в Dialogflow
+    Принимаем сообщение от Яндекс.Диалоги и переправляем в Dialogflow
 */
-var handle_dialog_msg = function(req, res) {
-  var message = req.body;
-  console.log(message);
-  message.request.original_utterance;
-  res.json({
-			  "response": {
-			    "text": "Здравствуйте! Это мы, хороводоведы.",
-			    "tts": "Здравствуйте! Это мы, хоров+одо в+еды.",
-			    "buttons": [],
-			    "end_session": false
-			  },
-			  "session": {
-			    "session_id": message.session.session_id,
-			    "message_id": message.session.message_id,
-			    "user_id": message.session.user_id
-			  },
-			  "version": message.version
+var handle_dialog_msg = function (req, res) {
+    var message = req.body;
+
+    var toDialogFlow = JSON.stringify({
+        "contexts": [],
+        "lang": message.meta.locale.split("-")[0],
+        "query": message.request.original_utterance,
+        "sessionId": message.session.session_id,
+        "timezone": message.meta.timezone
     });
+
+    request({
+            uri: "https://api.dialogflow.com/v1/query?v=20180818",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer 2071983881214c6db273cdeabcf0998b"
+
+            },
+            method: "POST",
+            body: toDialogFlow,
+        },
+        function (error, response, body) {
+            var body = JSON.parse(body);
+            var feedback = "";
+            if (!error && response.statusCode == 200) {
+                feedback = body.result.fulfillment.speech;
+            } else {
+                feedback = body.status.errorDetails;
+            }
+            res.json({
+                "response": {
+                    "text": feedback,
+                    "tts": feedback,
+                    "buttons": [],
+                    "end_session": false
+                },
+                "session": {
+                    "session_id": message.session.session_id,
+                    "message_id": message.session.message_id,
+                    "user_id": message.session.user_id
+                },
+                "version": message.version
+            });
+        }
+    )
+    ;
 };
 
 app.route('/dialog')
-		.post(handle_dialog_msg);
+    .post(handle_dialog_msg);
 
-
-
-
+var reqTimer = setTimeout(function wakeUp() {
+    request("https://dialogflow-transport.herokuapp.com/", function() {
+        console.log("WAKE UP DYNO");
+    });
+    return reqTimer = setTimeout(wakeUp, 1200000);
+}, 1200000);
 /*
 
 https://dialogflow-transport.herokuapp.com/dialog
