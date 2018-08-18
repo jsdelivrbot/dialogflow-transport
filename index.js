@@ -1,8 +1,13 @@
 var express = require('express')
+const bodyParser = require("body-parser");
 var app = express()
 
 app.set('port', (process.env.PORT || 5000))
 app.use(express.static(__dirname + '/public'))
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+app.use(bodyParser.json());
 
 app.get('/', function(request, response) {
   response.send('Hello World!')
@@ -17,6 +22,7 @@ app.listen(app.get('port'), function() {
 */
 var handle_dialog_msg = function(req, res) {
   var message = req.body;
+  console.log(message);
   message.request.original_utterance;
   res.json({
 			  "response": {
@@ -41,6 +47,9 @@ app.route('/dialog')
 
 
 /*
+
+https://dialogflow-transport.herokuapp.com/dialog
+
 Пример запроса
 
 {
