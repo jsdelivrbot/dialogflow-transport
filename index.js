@@ -24,6 +24,7 @@ app.listen(app.get('port'), function () {
 var handle_dialog_msg = function (req, res) {
     var message = req.body;
 
+    console.log(message.request.original_utterance);
     var toDialogFlow = JSON.stringify({
         "contexts": [],
         "lang": message.meta.locale.split("-")[0],
