@@ -32,13 +32,13 @@ var handle_dialog_msg = function (req, res) {
         "sessionId": message.session.session_id,
         "timezone": message.meta.timezone
     });
+    console.log(toDialogFlow);
 
     request({
             uri: "https://api.dialogflow.com/v1/query?v=20180818",
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/json; charset=utf-8",
                 "Authorization": "Bearer 2071983881214c6db273cdeabcf0998b"
-
             },
             method: "POST",
             body: toDialogFlow,
