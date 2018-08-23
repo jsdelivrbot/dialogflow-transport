@@ -73,12 +73,15 @@ var handle_dialog_msg = function (req, res) {
 app.route('/dialog')
     .post(handle_dialog_msg);
 
+/*
 var reqTimer = setTimeout(function wakeUp() {
     request("https://dialogflow-transport.herokuapp.com/", function() {
         console.log("WAKE UP DYNO");
     });
     return reqTimer = setTimeout(wakeUp, 1200000);
 }, 1200000);
+*/
+
 /*
 
 https://dialogflow-transport.herokuapp.com/dialog
